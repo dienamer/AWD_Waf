@@ -34,15 +34,15 @@ class Web_Waf(http.server.BaseHTTPRequestHandler):
         fake_flag=""
         try:
             with open("/flag", "r") as f:
-                flag = f.readline()
+                flag =str.encode(f.readline().strip())
         except FileNotFoundError:
             print("/flag is not found")
         try:
             with open("/fake_flag","r") as f:
-                fake_flag=f.readline()
+                fake_flag=str.encode(f.readline().strip())
         except FileNotFoundError:
             print("/fake_flag is not found")
-        if flag in res:
+        if  flag in res:
             res=res.replace(flag, fake_flag)
             self.send_response(200)
             self.send_header("Content-type", response.getheader("Content-type"))
@@ -57,7 +57,7 @@ class Web_Waf(http.server.BaseHTTPRequestHandler):
     # 跳转到jntm.html
     def re_Forward(self,conn_type,port=9870,path="/jntm.html"):
 
-        server = "127.0.0.1:{0}".format(port)
+        server = "0.0.0.0:{0}".format(port)
         conn = http.client.HTTPConnection(server)
 
         if conn_type == "GET":
@@ -73,7 +73,7 @@ class Web_Waf(http.server.BaseHTTPRequestHandler):
     # 如果没有出现敏感参数则放行，但依旧检查返回包是否有flag
     def conn_Access(self,conn_type):
         # 创建到目标服务器的连接
-        conn = http.client.HTTPConnection("localhost:81")
+        conn = http.client.HTTPConnection("0.0.0.0:81")
         # 转发 GET 请求
         if conn_type == "GET":
             conn.request("GET", self.path)
@@ -106,5 +106,5 @@ class Web_Waf(http.server.BaseHTTPRequestHandler):
             self.conn_Access()
 
 
-httpd = http.server.HTTPServer(('localhost', 80), Web_Waf)
+httpd = http.server.HTTPServer(('0.0.0.0', 80), Web_Waf)
 httpd.serve_forever()
